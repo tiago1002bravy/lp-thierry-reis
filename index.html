@@ -376,19 +376,6 @@ footer img{height:42px;width:auto}
     <div class="tslider rv" id="ts" aria-label="Depoimentos de alunos">
     <div class="testi">
       <div class="frame">
-        <img src="img/dep-1.jpg" alt="Aluno no lugar mais alto do pódio da Copa Novo Leblon, com Thierry de corner" data-plx>
-        <div class="shade"></div>
-        <span class="chip">1º lugar · Copa Novo Leblon</span>
-      </div>
-      <div class="tx">
-        <span class="q">“</span>
-        <p>"Ter aula em grupo ajuda, mas a individual com o Thierry é completamente diferente. Ter um atleta de alto nível e professor experiente olhando só pra mim fez com que eu aplicasse muito melhor as técnicas e conseguisse me destacar em competições."</p>
-        <div class="belt-rule"><span></span><span></span></div>
-        <span class="who">Aluno de aula individual · Campeão da Copa Novo Leblon</span>
-      </div>
-    </div>
-    <div class="testi">
-      <div class="frame">
         <img src="img/dep-2.jpg" alt="Aluno medalhista do Campeonato Brasileiro CBJJ sem kimono ao lado do Thierry" data-plx>
         <div class="shade"></div>
         <span class="chip">Medalhista · Brasileiro CBJJ</span>
@@ -397,7 +384,7 @@ footer img{height:42px;width:auto}
         <span class="q">“</span>
         <p>Do cronograma de aula individual direto pro pódio nacional: medalha no Campeonato Brasileiro CBJJ sem kimono.</p>
         <div class="belt-rule"><span></span><span></span></div>
-        <span class="who">Aluno de aula individual · Medalhista no Campeonato Brasileiro CBJJ sem kimono</span>
+        <span class="who">Aluno de aula individual · Faixa marrom · Medalhista no Campeonato Brasileiro CBJJ sem kimono</span>
       </div>
     </div>
     <div class="testi">
@@ -410,7 +397,20 @@ footer img{height:42px;width:auto}
         <span class="q">“</span>
         <p>"Comecei do absoluto zero, nunca tinha pisado num tatame e tinha até repulsa a lutas. Com o Professor Thierry conheci o Jiu Jitsu de verdade, físico e mental, e me tornei um pai, marido e empresário melhor. Se você tem um negócio, o Jiu Jitsu vira necessidade: o que vivemos à frente da empresa, vivemos também no tatame, o tal do achar o conforto no desconforto."</p>
         <div class="belt-rule"><span></span><span></span></div>
-        <span class="who">Aluno de aula individual · Do zero à faixa azul</span>
+        <span class="who">Aluno de aula individual · Faixa azul</span>
+      </div>
+    </div>
+    <div class="testi">
+      <div class="frame">
+        <img src="img/dep-1.jpg" alt="Aluno no lugar mais alto do pódio da Copa Novo Leblon, com Thierry de corner" data-plx>
+        <div class="shade"></div>
+        <span class="chip">1º lugar · Copa Novo Leblon</span>
+      </div>
+      <div class="tx">
+        <span class="q">“</span>
+        <p>"Ter aula em grupo ajuda, mas a individual com o Thierry é completamente diferente. Ter um atleta de alto nível e professor experiente olhando só pra mim fez com que eu aplicasse muito melhor as técnicas e conseguisse me destacar em competições."</p>
+        <div class="belt-rule"><span></span><span></span></div>
+        <span class="who">Aluno de aula individual · Campeão da Copa Novo Leblon</span>
       </div>
     </div>
     </div>
@@ -499,22 +499,27 @@ footer img{height:42px;width:auto}
   },{passive:true});
 
   var ts = document.getElementById('ts'), tprev = document.getElementById('tprev'), tnext = document.getElementById('tnext'), tcnt = document.getElementById('tcnt');
-  var tTotal = ts.children.length;
+  var tTotal = ts.children.length, tPaused = false, tAuto;
   function tIdx(){ return Math.min(tTotal - 1, Math.round(ts.scrollLeft / (ts.clientWidth + 14))) }
-  function tUpd(){
-    var i = tIdx();
-    tcnt.innerHTML = '<b>' + (i + 1) + '</b> / ' + tTotal;
-    tprev.disabled = i === 0;
-    tnext.disabled = i === tTotal - 1;
-  }
+  function tUpd(){ tcnt.innerHTML = '<b>' + (tIdx() + 1) + '</b> / ' + tTotal }
   function tGo(dir){
-    var i = Math.max(0, Math.min(tTotal - 1, tIdx() + dir));
+    var i = (tIdx() + dir + tTotal) % tTotal;
     ts.scrollTo({left: i * (ts.clientWidth + 14), behavior: reduce ? 'auto' : 'smooth'});
   }
-  tprev.addEventListener('click', function(){ tGo(-1) });
-  tnext.addEventListener('click', function(){ tGo(1) });
+  function tPlay(){
+    clearInterval(tAuto);
+    if(reduce) return;
+    tAuto = setInterval(function(){
+      if(!tPaused && document.visibilityState === 'visible') tGo(1);
+    }, 6000);
+  }
+  tprev.addEventListener('click', function(){ tGo(-1); tPlay() });
+  tnext.addEventListener('click', function(){ tGo(1); tPlay() });
+  ts.addEventListener('mouseenter', function(){ tPaused = true });
+  ts.addEventListener('mouseleave', function(){ tPaused = false });
+  ts.addEventListener('touchstart', function(){ tPaused = true; clearTimeout(ts._tr); ts._tr = setTimeout(function(){ tPaused = false }, 12000) }, {passive:true});
   var tT; ts.addEventListener('scroll', function(){ clearTimeout(tT); tT = setTimeout(tUpd, 80) }, {passive:true});
-  addEventListener('resize', tUpd); tUpd();
+  addEventListener('resize', tUpd); tUpd(); tPlay();
 
   if(!reduce){
     var plx = [].slice.call(document.querySelectorAll('[data-plx]'));
