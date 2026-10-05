@@ -184,7 +184,18 @@ html:not(.anim) .step::before{transform:scaleX(1)}
 .testi .tx .q{font:700 90px/.4 var(--disp);color:var(--ghost)}
 .testi .tx p{font-size:clamp(16px,1.5vw,19px);color:#E6E6E9;text-wrap:pretty}
 .testi .tx .who{font:600 12px/1.5 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
-.testi.rev{flex-direction:row-reverse}
+/* carrossel de depoimentos */
+.tshead{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
+.tnav{display:flex;align-items:center;gap:10px}
+.tnav .cnt{font:700 21px/1 var(--disp);letter-spacing:.1em;color:var(--dim);min-width:68px;text-align:center;font-variant-numeric:tabular-nums}
+.tnav .cnt b{color:var(--paper);font-weight:700}
+.tbtn{width:52px;height:52px;background:var(--ink1);border:1px solid var(--line);color:var(--paper);font:400 22px/1 var(--body);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,border-color .2s;border-radius:2px}
+.tbtn:hover{background:var(--ink2);border-color:#4A4A52}
+.tbtn:disabled{opacity:.3;cursor:default}
+.tbtn:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.tslider{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tslider::-webkit-scrollbar{display:none}
+.tslider .testi{flex:0 0 100%;scroll-snap-align:start;min-width:0}
 
 /* faq */
 .faq{display:flex;flex-direction:column;border-top:1px solid var(--line)}
@@ -351,11 +362,19 @@ footer img{height:42px;width:auto}
 <section class="sec">
   <span class="ghostword">Pódio</span>
   <div class="wrap" style="display:flex;flex-direction:column;gap:clamp(28px,4vw,48px)">
-    <div style="display:flex;flex-direction:column;gap:16px" class="rv">
-      <span class="eyebrow">Resultados</span>
-      <h2 class="h2">Quem treina individual com o Thierry</h2>
+    <div class="tshead rv">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <span class="eyebrow">Resultados</span>
+        <h2 class="h2">Quem treina individual com o Thierry</h2>
+      </div>
+      <div class="tnav">
+        <button class="tbtn" id="tprev" aria-label="Depoimento anterior">←</button>
+        <span class="cnt" id="tcnt"><b>1</b> / 3</span>
+        <button class="tbtn" id="tnext" aria-label="Próximo depoimento">→</button>
+      </div>
     </div>
-    <div class="testi rv">
+    <div class="tslider rv" id="ts" aria-label="Depoimentos de alunos">
+    <div class="testi">
       <div class="frame">
         <img src="img/dep-1.jpg" alt="Aluno no lugar mais alto do pódio da Copa Novo Leblon, com Thierry de corner" data-plx>
         <div class="shade"></div>
@@ -368,7 +387,7 @@ footer img{height:42px;width:auto}
         <span class="who">Aluno de aula individual · Campeão da Copa Novo Leblon</span>
       </div>
     </div>
-    <div class="testi rev rv">
+    <div class="testi">
       <div class="frame">
         <img src="img/dep-2.jpg" alt="Aluno medalhista do Campeonato Brasileiro CBJJ sem kimono ao lado do Thierry" data-plx>
         <div class="shade"></div>
@@ -381,7 +400,7 @@ footer img{height:42px;width:auto}
         <span class="who">Aluno de aula individual · Medalhista no Campeonato Brasileiro CBJJ sem kimono</span>
       </div>
     </div>
-    <div class="testi rv">
+    <div class="testi">
       <div class="frame">
         <img src="img/dep-3.jpg" alt="Thierry com aluno de faixa azul no tatame da SPARTA" data-plx>
         <div class="shade"></div>
@@ -393,6 +412,7 @@ footer img{height:42px;width:auto}
         <div class="belt-rule"><span></span><span></span></div>
         <span class="who">Aluno de aula individual · Do zero à faixa azul</span>
       </div>
+    </div>
     </div>
   </div>
 </section>
@@ -477,6 +497,24 @@ footer img{height:42px;width:auto}
     if(!reduce){ hd.classList.toggle('hide', y > 160 && y > lastY) }
     lastY = y;
   },{passive:true});
+
+  var ts = document.getElementById('ts'), tprev = document.getElementById('tprev'), tnext = document.getElementById('tnext'), tcnt = document.getElementById('tcnt');
+  var tTotal = ts.children.length;
+  function tIdx(){ return Math.min(tTotal - 1, Math.round(ts.scrollLeft / (ts.clientWidth + 14))) }
+  function tUpd(){
+    var i = tIdx();
+    tcnt.innerHTML = '<b>' + (i + 1) + '</b> / ' + tTotal;
+    tprev.disabled = i === 0;
+    tnext.disabled = i === tTotal - 1;
+  }
+  function tGo(dir){
+    var i = Math.max(0, Math.min(tTotal - 1, tIdx() + dir));
+    ts.scrollTo({left: i * (ts.clientWidth + 14), behavior: reduce ? 'auto' : 'smooth'});
+  }
+  tprev.addEventListener('click', function(){ tGo(-1) });
+  tnext.addEventListener('click', function(){ tGo(1) });
+  var tT; ts.addEventListener('scroll', function(){ clearTimeout(tT); tT = setTimeout(tUpd, 80) }, {passive:true});
+  addEventListener('resize', tUpd); tUpd();
 
   if(!reduce){
     var plx = [].slice.call(document.querySelectorAll('[data-plx]'));
